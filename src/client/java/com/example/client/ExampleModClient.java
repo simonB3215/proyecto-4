@@ -1,17 +1,14 @@
 package com.example.client;
 
 import com.example.client.gui.TranslatorOptionsScreen;
-import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.regex.Matcher;
@@ -31,19 +28,19 @@ public class ExampleModClient implements ClientModInitializer {
         // Cargar Configuración almacenada localmente
         ConfigManager.loadConfig();
 
-        // Registrar Comando para abrir menú gráfico
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            dispatcher.register(ClientCommandManager.literal("translator")
-                .then(ClientCommandManager.literal("menu")
-                    .executes(context -> {
-                        Minecraft client = Minecraft.getInstance();
-                        client.execute(() -> {
-                            client.setScreen(new TranslatorOptionsScreen(client.screen));
-                        });
-                        return 1;
-                    })
-                )
-            );
+        // Registrar Atajo de Teclado usando Yarn Mappings
+        KeyBinding openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+            "key.translator.open_menu", 
+            InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_V, 
+            "category.translator"
+        ));
+
+        // Evento de Tick para abrir el menú visual
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (openMenuKey.wasPressed()) {
+                client.setScreen(new TranslatorOptionsScreen(client.currentScreen));
+            }
         });
 
         // Evento de Intercepción de Chat de Jugadores (Con firma criptográfica)
@@ -67,11 +64,11 @@ public class ExampleModClient implements ClientModInitializer {
                 String textToTranslate = matcher.group(2);
 
                 TranslatorHelper.translateAsync(textToTranslate, targetLanguage).thenAccept(translatedText -> {
-                    Minecraft client = Minecraft.getInstance();
-                    if (client.gui != null) {
+                    MinecraftClient client = MinecraftClient.getInstance();
+                    if (client.inGameHud != null) {
                         client.execute(() -> {
                             // Agregamos \u200B (espacio invisible) para evitar bucles infinitos
-                            client.gui.getChat().addMessage(Component.literal("§9\u200BParty > §f" + rawText.substring(8, prefix.length()) + "§e" + translatedText));
+                            client.inGameHud.getChatHud().addMessage(Text.literal("§9\u200BParty > §f" + rawText.substring(8, prefix.length()) + "§e" + translatedText));
                         });
                     }
                 });

@@ -2,7 +2,7 @@ package com.example.client.gui;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,8 +16,8 @@ public class HypixelApiHelper {
     public static CompletableFuture<String> syncLanguageFromHypixel(String apiKey) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (Minecraft.getInstance().player == null) return null;
-                String uuid = Minecraft.getInstance().player.getUUID().toString().replace("-", "");
+                if (MinecraftClient.getInstance().player == null) return null;
+                String uuid = MinecraftClient.getInstance().player.getUuidAsString().replace("-", "");
                 
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create("https://api.hypixel.net/v2/player?uuid=" + uuid))
