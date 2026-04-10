@@ -16,10 +16,21 @@ public class TranslatorOptionsScreen extends Screen {
 
     private final Screen parent;
     private TextFieldWidget apiKeyField;
-    private EssentialButtonWidget toggleButton;
-    private EssentialButtonWidget langButton;
+    private ButtonWidget toggleButton;
+    private ButtonWidget modeButton;
+    private ButtonWidget langDropdownBtn;
+    private ButtonWidget colorDropdownBtn;
+    private ButtonWidget syncButton;
+    private ButtonWidget posButton;
+    private ButtonWidget closeButton;
+
+    private boolean langExpanded = false;
+    private boolean colorExpanded = false;
+    private List<ButtonWidget> langOptionButtons = new java.util.ArrayList<>();
+    private List<ButtonWidget> colorOptionButtons = new java.util.ArrayList<>();
     
-    private static final List<String> LANGUAGES = Arrays.asList("es", "en", "pl", "fr", "de", "ru", "pt", "it");
+    private List<String> langOptions = Arrays.asList("[ES] Español", "[EN] English", "[PL] Polski", "[FR] Français", "[DE] Deutsch", "[RU] Русский", "[PT] Português", "[IT] Italiano");
+    private List<String> colorOptions = Arrays.asList("§fBlanco", "§eAmarillo", "§aVerde", "§cRojo", "§bCeleste", "§dRosa", "§6Naranja", "§7Gris");
 
     public TranslatorOptionsScreen(Screen parent) {
         super(Text.literal("Configuración del Traductor"));
@@ -39,79 +50,112 @@ public class TranslatorOptionsScreen extends Screen {
         int centerX = this.width / 2;
         int startY = 30;
 
-        // Botón Activar/Desactivar
-        this.toggleButton = new EssentialButtonWidget(centerX - 102, startY, 100, 20, () -> Text.literal("Traductor: " + (ExampleModClient.isEnabled ? "§aON" : "§cOFF")), () -> {
+        // Limpiar opciones
+        langOptionButtons.clear();
+        colorOptionButtons.clear();
+
+        this.toggleButton = ButtonWidget.builder(Text.empty(), btn -> {
             ExampleModClient.isEnabled = !ExampleModClient.isEnabled;
             sendAestheticMessage(ExampleModClient.isEnabled);
             saveSettings();
-        });
+        }).dimensions(centerX - 102, startY, 100, 20).build();
+        this.toggleButton.setAlpha(0.0f);
         this.addDrawableChild(toggleButton);
 
-        // Botón Modo Traducción
-        this.addDrawableChild(new EssentialButtonWidget(centerX + 2, startY, 100, 20, () -> Text.literal(ExampleModClient.translateMode.equals("PARTY") ? "Modo: PARTY" : "Modo: GLOBAL"), () -> {
+        this.modeButton = ButtonWidget.builder(Text.empty(), btn -> {
             ExampleModClient.translateMode = ExampleModClient.translateMode.equals("PARTY") ? "ALL" : "PARTY";
             saveSettings();
-        }));
+        }).dimensions(centerX + 2, startY, 100, 20).build();
+        this.modeButton.setAlpha(0.0f);
+        this.addDrawableChild(modeButton);
 
-        // Menú Desplegable de Idiomas (Banderas/Nombres estilizados)
-        List<String> langOptions = Arrays.asList("[ES] Español", "[EN] English", "[PL] Polski", "[FR] Français", "[DE] Deutsch", "[RU] Русский", "[PT] Português", "[IT] Italiano");
-        String currentLangStr = "[ES] Español";
-        for (String opt : langOptions) {
-            if (opt.toLowerCase().contains("[" + ExampleModClient.targetLanguage + "]")) {
-                currentLangStr = opt; break;
-            }
-        }
-        
-        EssentialDropdownWidget langDropdown = new EssentialDropdownWidget(centerX - 100, startY + 25, 200, 20, Text.empty(), langOptions, currentLangStr, selected -> {
-            ExampleModClient.targetLanguage = selected.substring(1, 3).toLowerCase();
-            saveSettings();
-        });
-        langDropdown.setPrefix("Idioma: ");
+        this.langDropdownBtn = ButtonWidget.builder(Text.empty(), btn -> {
+            langExpanded = !langExpanded;
+            if(langExpanded) colorExpanded = false;
+            updateDropdowns();
+        }).dimensions(centerX - 100, startY + 25, 200, 20).build();
+        this.langDropdownBtn.setAlpha(0.0f);
+        this.addDrawableChild(langDropdownBtn);
 
-        // Dropdown Color de Texto
-        List<String> colorOptions = Arrays.asList("§fBlanco", "§eAmarillo", "§aVerde", "§cRojo", "§bCeleste", "§dRosa", "§6Naranja", "§7Gris");
-        String currentColorStr = "§eAmarillo";
-        for (String c : colorOptions) {
-            if (c.startsWith(ConfigManager.textColor)) { currentColorStr = c; break; }
-        }
-        
-        EssentialDropdownWidget colorDropdown = new EssentialDropdownWidget(centerX - 100, startY + 50, 200, 20, Text.empty(), colorOptions, currentColorStr, selected -> {
-            ConfigManager.textColor = selected.substring(0, 2);
-            saveSettings();
-        });
-        colorDropdown.setPrefix("Color F.: ");
+        this.colorDropdownBtn = ButtonWidget.builder(Text.empty(), btn -> {
+            colorExpanded = !colorExpanded;
+            if(colorExpanded) langExpanded = false;
+            updateDropdowns();
+        }).dimensions(centerX - 100, startY + 50, 200, 20).build();
+        this.colorDropdownBtn.setAlpha(0.0f);
+        this.addDrawableChild(colorDropdownBtn);
 
-        // TextFieldWidget para API Key
         this.apiKeyField = new TextFieldWidget(this.textRenderer, centerX - 100, startY + 90, 200, 20, Text.literal("API Key"));
         this.apiKeyField.setMaxLength(100);
         this.apiKeyField.setText(ConfigManager.apiKey);
         this.addDrawableChild(this.apiKeyField);
 
-        // Botines de Acción Extendida
-        this.addDrawableChild(new EssentialButtonWidget(centerX - 100, startY + 115, 200, 20, Text.literal("Sincronizar desde Hypixel"), () -> {
+        this.syncButton = ButtonWidget.builder(Text.empty(), btn -> {
             saveSettings();
             HypixelApiHelper.syncLanguageFromHypixel(ConfigManager.apiKey).thenAccept(lang -> {
                 if (lang != null && this.client != null) {
                     ExampleModClient.targetLanguage = lang;
                     saveSettings();
-                    this.client.execute(() -> this.client.setScreen(new TranslatorOptionsScreen(this.parent))); // Reload screen
                 }
             });
-        }));
+        }).dimensions(centerX - 100, startY + 115, 200, 20).build();
+        this.syncButton.setAlpha(0.0f);
+        this.addDrawableChild(syncButton);
 
-        this.addDrawableChild(new EssentialButtonWidget(centerX - 100, startY + 140, 200, 20, Text.literal("Reposicionar Chat Traducido"), () -> {
+        this.posButton = ButtonWidget.builder(Text.empty(), btn -> {
             saveSettings();
             if (this.client != null) this.client.setScreen(new HudEditorScreen(this));
-        }));
+        }).dimensions(centerX - 100, startY + 140, 200, 20).build();
+        this.posButton.setAlpha(0.0f);
+        this.addDrawableChild(posButton);
 
-        this.addDrawableChild(new EssentialButtonWidget(centerX - 100, this.height - 30, 200, 20, Text.literal("Guardar y Cerrar"), () -> {
+        this.closeButton = ButtonWidget.builder(Text.empty(), btn -> {
             saveSettings();
             if(this.client != null) this.client.setScreen(this.parent);
-        }));
-        
-        // Añadir dropdowns al final para que queden on top (últimos dibujados = renderizados encima de otros widgets normales, aunque EssentialDropdownWidget maneja Z-index 300)
-        this.addDrawableChild(colorDropdown);
-        this.addDrawableChild(langDropdown);
+        }).dimensions(centerX - 100, this.height - 30, 200, 20).build();
+        this.closeButton.setAlpha(0.0f);
+        this.addDrawableChild(closeButton);
+
+        updateDropdowns();
+    }
+
+    private void updateDropdowns() {
+        for(ButtonWidget opt : langOptionButtons) this.remove(opt);
+        for(ButtonWidget opt : colorOptionButtons) this.remove(opt);
+        langOptionButtons.clear();
+        colorOptionButtons.clear();
+
+        if (langExpanded) {
+            int my = langDropdownBtn.getY() + 20;
+            for (int i = 0; i < langOptions.size(); i++) {
+                String optionStr = langOptions.get(i);
+                ButtonWidget optBtn = ButtonWidget.builder(Text.empty(), btn -> {
+                    ExampleModClient.targetLanguage = optionStr.substring(1, 3).toLowerCase();
+                    langExpanded = false;
+                    saveSettings();
+                    updateDropdowns();
+                }).dimensions(langDropdownBtn.getX(), my + (i * 20), 200, 20).build();
+                optBtn.setAlpha(0.0f);
+                langOptionButtons.add(optBtn);
+                this.addDrawableChild(optBtn);
+            }
+        }
+
+        if (colorExpanded) {
+            int my = colorDropdownBtn.getY() + 20;
+            for (int i = 0; i < colorOptions.size(); i++) {
+                String optionStr = colorOptions.get(i);
+                ButtonWidget optBtn = ButtonWidget.builder(Text.empty(), btn -> {
+                    ConfigManager.textColor = optionStr.substring(0, 2);
+                    colorExpanded = false;
+                    saveSettings();
+                    updateDropdowns();
+                }).dimensions(colorDropdownBtn.getX(), my + (i * 20), 200, 20).build();
+                optBtn.setAlpha(0.0f);
+                colorOptionButtons.add(optBtn);
+                this.addDrawableChild(optBtn);
+            }
+        }
     }
 
     private void saveSettings() {
@@ -119,11 +163,68 @@ public class TranslatorOptionsScreen extends Screen {
         ConfigManager.saveConfig();
     }
 
+    private void drawEssentialAesthetic(DrawContext context, ButtonWidget btn, String text, int mouseX, int mouseY, boolean isDropdown, boolean expanded) {
+        if (!btn.visible) return;
+        boolean hovered = mouseX >= btn.getX() && mouseY >= btn.getY() && mouseX < btn.getX() + btn.getWidth() && mouseY < btn.getY() + btn.getHeight();
+        int bgColor = hovered ? 0xAA444444 : 0x90000000;
+        int borderColor = hovered ? 0xFFFFFFFF : 0x44FFFFFF;
+
+        context.fill(btn.getX(), btn.getY(), btn.getX() + btn.getWidth(), btn.getY() + btn.getHeight(), bgColor);
+        context.fill(btn.getX(), btn.getY(), btn.getX() + btn.getWidth(), btn.getY() + 1, borderColor);
+        context.fill(btn.getX(), btn.getY() + btn.getHeight() - 1, btn.getX() + btn.getWidth(), btn.getY() + btn.getHeight(), borderColor);
+        context.fill(btn.getX(), btn.getY(), btn.getX() + 1, btn.getY() + btn.getHeight(), borderColor);
+        context.fill(btn.getX() + btn.getWidth() - 1, btn.getY(), btn.getX() + btn.getWidth(), btn.getY() + btn.getHeight(), borderColor);
+
+        int textX = isDropdown ? btn.getX() + 5 : btn.getX() + (btn.getWidth() / 2) - (this.textRenderer.getWidth(text) / 2);
+        int textY = btn.getY() + (btn.getHeight() - this.textRenderer.fontHeight) / 2 + 1;
+        context.drawTextWithShadow(this.textRenderer, text, textX, textY, btn.active ? 0xFFFFFFFF : 0xFFAAAAAA);
+
+        if (isDropdown) {
+            context.drawTextWithShadow(this.textRenderer, expanded ? "▲" : "▼", btn.getX() + btn.getWidth() - 12, textY, 0xFFAAAAAA);
+        }
+    }
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
+        
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 10, 0xFFFFFFFF);
         context.drawTextWithShadow(this.textRenderer, "Hypixel API Key:", this.width / 2 - 100, 105, 0xFFA0A0A0);
+
+        drawEssentialAesthetic(context, toggleButton, "Traductor: " + (ExampleModClient.isEnabled ? "§aON" : "§cOFF"), mouseX, mouseY, false, false);
+        drawEssentialAesthetic(context, modeButton, ExampleModClient.translateMode.equals("PARTY") ? "Modo: PARTY" : "Modo: GLOBAL", mouseX, mouseY, false, false);
+        
+        String currentLangStr = "[ES] Español";
+        for (String opt : langOptions) { if (opt.toLowerCase().contains("[" + ExampleModClient.targetLanguage + "]")) { currentLangStr = opt; break; } }
+        drawEssentialAesthetic(context, langDropdownBtn, "Idioma: " + currentLangStr, mouseX, mouseY, true, langExpanded);
+
+        String currentColorStr = "§eAmarillo";
+        for (String c : colorOptions) { if (c.startsWith(ConfigManager.textColor)) { currentColorStr = c; break; } }
+        drawEssentialAesthetic(context, colorDropdownBtn, "Color F.: " + currentColorStr, mouseX, mouseY, true, colorExpanded);
+
+        drawEssentialAesthetic(context, syncButton, "Sincronizar desde Hypixel", mouseX, mouseY, false, false);
+        drawEssentialAesthetic(context, posButton, "Reposicionar Chat Traducido", mouseX, mouseY, false, false);
+        drawEssentialAesthetic(context, closeButton, "Guardar y Cerrar", mouseX, mouseY, false, false);
+
+        if (langExpanded) {
+            context.fill(langDropdownBtn.getX(), langDropdownBtn.getY() + 20, langDropdownBtn.getX() + langDropdownBtn.getWidth(), langDropdownBtn.getY() + 20 + (langOptions.size() * 20), 0xD0000000);
+            for (int i = 0; i < langOptionButtons.size(); i++) {
+                ButtonWidget optBtn = langOptionButtons.get(i);
+                boolean hov = mouseX >= optBtn.getX() && mouseY >= optBtn.getY() && mouseX < optBtn.getX() + optBtn.getWidth() && mouseY < optBtn.getY() + optBtn.getHeight();
+                if (hov) context.fill(optBtn.getX() + 1, optBtn.getY(), optBtn.getX() + optBtn.getWidth() - 1, optBtn.getY() + 20, 0x884444FF);
+                context.drawTextWithShadow(this.textRenderer, langOptions.get(i), optBtn.getX() + 5, optBtn.getY() + 6, hov ? 0xFFFFFFFF : 0xFFAAAAAA);
+            }
+        }
+
+        if (colorExpanded) {
+            context.fill(colorDropdownBtn.getX(), colorDropdownBtn.getY() + 20, colorDropdownBtn.getX() + colorDropdownBtn.getWidth(), colorDropdownBtn.getY() + 20 + (colorOptions.size() * 20), 0xD0000000);
+            for (int i = 0; i < colorOptionButtons.size(); i++) {
+                ButtonWidget optBtn = colorOptionButtons.get(i);
+                boolean hov = mouseX >= optBtn.getX() && mouseY >= optBtn.getY() && mouseX < optBtn.getX() + optBtn.getWidth() && mouseY < optBtn.getY() + optBtn.getHeight();
+                if (hov) context.fill(optBtn.getX() + 1, optBtn.getY(), optBtn.getX() + optBtn.getWidth() - 1, optBtn.getY() + 20, 0x884444FF);
+                context.drawTextWithShadow(this.textRenderer, colorOptions.get(i), optBtn.getX() + 5, optBtn.getY() + 6, hov ? 0xFFFFFFFF : 0xFFAAAAAA);
+            }
+        }
     }
 
     @Override
