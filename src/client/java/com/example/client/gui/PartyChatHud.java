@@ -59,53 +59,56 @@ public class PartyChatHud {
         context.getMatrices().pushMatrix();
         context.getMatrices().translate((float)x, (float)y);
         context.getMatrices().scale(ConfigManager.hudScale, ConfigManager.hudScale);
-        
-        int currentY = 0;
         int maxWidth = 320;
-        
+        int totalHeight = 0;
+        int maxWidthBlock = 0;
+        float maxAlpha = 0.0f;
+
+        // Primer paso: calcular dimensiones totales y alfa máximo del recuadro
         for (PartyMessage msg : MESSAGES) {
             long age = currentTime - msg.addedTime;
             float alpha = 1.0f;
+            if (age < 300) alpha = age / 300.0f;
+            else if (DISPLAY_DURATION - age < 500) alpha = (DISPLAY_DURATION - age) / 500.0f;
+            alpha = Math.max(0.0f, Math.min(1.0f, alpha));
             
-            // Fade in (300ms)
-            if (age < 300) {
-                alpha = age / 300.0f;
-            } 
-            // Fade out (500ms)
-            else if (DISPLAY_DURATION - age < 500) {
-                alpha = (DISPLAY_DURATION - age) / 500.0f;
+            if (alpha > maxAlpha) maxAlpha = alpha;
+
+            List<net.minecraft.text.OrderedText> lines = client.textRenderer.wrapLines(msg.message, maxWidth);
+            for (net.minecraft.text.OrderedText line : lines) {
+                int w = client.textRenderer.getWidth(line);
+                if (w > maxWidthBlock) maxWidthBlock = w;
             }
-            
+            totalHeight += lines.size() * (client.textRenderer.fontHeight + 3) + 4; // 4 es el margen entre mensajes
+        }
+
+        // Si tenemos contenido, dibujamos el recuadro gigante detrás
+        if (ConfigManager.showBackground && maxAlpha > 0.0f) {
+            int bgAlphaInt = (int) (maxAlpha * 180.0f);
+            int bgColor = (bgAlphaInt << 24) | 0x000000;
+            // totalHeight se quita 4 al final porque el último no necesita margen
+            context.fill(-4, -4, maxWidthBlock + 4, totalHeight - 4, bgColor);
+        }
+
+        // Segundo paso: dibujar los textos en su respectiva altura
+        int currentY = 0;
+        for (PartyMessage msg : MESSAGES) {
+            long age = currentTime - msg.addedTime;
+            float alpha = 1.0f;
+            if (age < 300) alpha = age / 300.0f;
+            else if (DISPLAY_DURATION - age < 500) alpha = (DISPLAY_DURATION - age) / 500.0f;
             alpha = Math.max(0.0f, Math.min(1.0f, alpha));
             
             int textAlphaInt = (int) (alpha * 255.0f);
             int textColor = (textAlphaInt << 24) | 0x00FFFFFF;
-            
-            // Incrementado la opacidad a 180 para que se vea un rectángulo más 'opaco'
-            int bgAlphaInt = (int) (alpha * 180.0f); 
-            int bgColor = (bgAlphaInt << 24) | 0x000000;
 
             List<net.minecraft.text.OrderedText> lines = client.textRenderer.wrapLines(msg.message, maxWidth);
-            
-            int blockWidth = 0;
-            for (net.minecraft.text.OrderedText line : lines) {
-                int w = client.textRenderer.getWidth(line);
-                if (w > blockWidth) blockWidth = w;
-            }
-            
-            int blockHeight = lines.size() * (client.textRenderer.fontHeight + 3);
-            
-            if (ConfigManager.showBackground) {
-                context.fill(-2, currentY - 2, blockWidth + 4, currentY + blockHeight - 1, bgColor);
-            }
-            
             for (net.minecraft.text.OrderedText line : lines) {
                 context.drawTextWithShadow(client.textRenderer, line, 0, currentY, textColor);
                 currentY += client.textRenderer.fontHeight + 3;
             }
             
-            // Margen entre diferentes mensajes
-            currentY += 4;
+            currentY += 4; // Margen entre diferentes mensajes
         }
         
         context.getMatrices().popMatrix();
