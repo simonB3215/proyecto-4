@@ -9,9 +9,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ChatHud.class)
 public class ChatHudMixin {
-    @Inject(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"))
+    @Inject(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), cancellable = true)
     private void onAddMessage(Text message, CallbackInfo ci) {
-        // Enviar a nuestro analizador global en tiempo real
-        com.example.client.ExampleModClient.checkPartyChat(message.getString());
+        if (com.example.client.ExampleModClient.isTranslatingOutput) return;
+
+        // Enviar a nuestro analizador global en tiempo real y cancelar si corresponde
+        if (com.example.client.ExampleModClient.shouldCancelAndTranslate(message.getString())) {
+            ci.cancel();
+        }
     }
 }

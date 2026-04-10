@@ -76,26 +76,27 @@ public class ExampleModClient implements ClientModInitializer {
         });
     }
 
-    public static void checkPartyChat(String rawText) {
-        if (!isEnabled) return;
-        processMessage(rawText);
-    }
+    public static boolean isTranslatingOutput = false;
 
-    private static void processMessage(String rawText) {
+    public static boolean shouldCancelAndTranslate(String rawText) {
+        if (!isEnabled) return false;
+
         if (translateMode.equals("PARTY")) {
             if ((rawText.contains("Party") || rawText.contains("Grupo"))) {
                 Matcher matcher = PARTY_CHAT_PATTERN.matcher(rawText);
                 if (matcher.matches()) {
                     executeTranslation(matcher.group(1), matcher.group(2), matcher.group(3));
+                    return ConfigManager.combinedMode;
                 }
             }
         } else if (translateMode.equals("ALL")) {
             Matcher matcher = ALL_CHAT_PATTERN.matcher(rawText);
             if (matcher.matches()) {
-                // Para ALL mode, la regex simplificada divide en (Prefijo+Usuario:) y (Mensaje)
                 executeTranslation("", matcher.group(1), matcher.group(2));
+                return ConfigManager.combinedMode;
             }
         }
+        return false;
     }
 
     private static void executeTranslation(String prefix, String userPart, String textToTranslate) {
@@ -105,7 +106,9 @@ public class ExampleModClient implements ClientModInitializer {
                 client.execute(() -> {
                     Text vanilatxt = Text.literal("§9" + prefix + "§f" + userPart + ConfigManager.textColor + translatedText);
                     if (ConfigManager.combinedMode) {
+                        isTranslatingOutput = true;
                         client.inGameHud.getChatHud().addMessage(vanilatxt);
+                        isTranslatingOutput = false;
                     } else {
                         com.example.client.gui.PartyChatHud.addMessage(vanilatxt);
                     }
