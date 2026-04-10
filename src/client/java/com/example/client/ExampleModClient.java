@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 public class ExampleModClient implements ClientModInitializer {
 
     // Regex to match "Party > [MVP+] Name: Message" or "Party > Name: Message"
-    private static final Pattern PARTY_CHAT_PATTERN = Pattern.compile("^(Party > .*?: )(.*)$");
+    private static final Pattern PARTY_CHAT_PATTERN = Pattern.compile(".*?(Party > )(.*?: )(.*)$");
     
     // Variables de estado
     public static boolean isEnabled = true;
@@ -63,20 +63,34 @@ public class ExampleModClient implements ClientModInitializer {
             processMessage(message.getString());
             return true; // Siempre permitimos que el chat de vanilla reciba el original
         });
+
+        // Mensaje de bienvenida al unirse a un servidor o mundo
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            String version = net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer("modid")
+                .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("1.0.0");
+            
+            client.execute(() -> {
+                if (client.inGameHud != null && isEnabled) {
+                    client.inGameHud.getChatHud().addMessage(
+                        Text.literal("§8[§bPartyTranslator§8] §7» §aFuncionando correctamente. §7Versión: §e" + version)
+                    );
+                }
+            });
+        });
     }
 
     private static void processMessage(String rawText) {
-        if (rawText.startsWith("Party >")) {
+        if (rawText.contains("Party >") && !rawText.contains("\u200B")) {
             Matcher matcher = PARTY_CHAT_PATTERN.matcher(rawText);
             if (matcher.matches()) {
-                String prefix = matcher.group(1);
-                String textToTranslate = matcher.group(2);
+                String userPart = matcher.group(2);
+                String textToTranslate = matcher.group(3);
 
                 TranslatorHelper.translateAsync(textToTranslate, targetLanguage).thenAccept(translatedText -> {
                     MinecraftClient client = MinecraftClient.getInstance();
                     if (client.inGameHud != null) {
                         client.execute(() -> {
-                            Text vanilatxt = Text.literal("§9\u200BParty > §f" + rawText.substring(8, prefix.length()) + "§e" + translatedText);
+                            Text vanilatxt = Text.literal("§9\u200BParty > §f" + userPart + "§e" + translatedText);
                             // Enviar a Vanilla Chat
                             client.inGameHud.getChatHud().addMessage(vanilatxt);
                             // Enviar a PartyChatHud exclusivo

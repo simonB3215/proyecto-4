@@ -25,6 +25,7 @@ public class TranslatorHelper {
                 
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(urlStr))
+                        .header("User-Agent", "Mozilla/5.0")
                         .GET()
                         .build();
 

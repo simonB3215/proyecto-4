@@ -37,7 +37,8 @@ public class HudEditorScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // En 1.21.11, usar el método genérico que dibuja el marco oscuro por omisión.
+        // Fondo oscuro absoluto para no depender de `super.render` si no dibuja fondo
+        context.fill(0, 0, this.width, this.height, 0x90000000);
         super.render(context, mouseX, mouseY, delta);
         
         int x = ConfigManager.hudX;
@@ -90,9 +91,10 @@ public class HudEditorScreen extends Screen {
         
         context.getMatrices().popMatrix();
         
+        context.drawCenteredTextWithShadow(this.textRenderer, "§c§lMODO EDITOR", this.width / 2, 20, 0xFF0000);
         context.drawCenteredTextWithShadow(this.textRenderer, "Arrastra la caja para mover el Chat de Party", this.width / 2, this.height - 40, 0xFFFFFF);
         context.drawCenteredTextWithShadow(this.textRenderer, "Gira la Rueda del Ratón para aumentar/reducir el tamaño", this.width / 2, this.height - 25, 0xFFFFFF);
-        context.drawCenteredTextWithShadow(this.textRenderer, "Pulsa §e[ESC]§f para volver", this.width / 2, this.height - 10, 0xAAAAAA);
+        context.drawCenteredTextWithShadow(this.textRenderer, "Pulsa §e[ESC]§f para guardar y volver", this.width / 2, this.height - 10, 0xAAAAAA);
     }
 
     @Override
