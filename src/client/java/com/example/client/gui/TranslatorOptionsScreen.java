@@ -66,6 +66,7 @@ public class TranslatorOptionsScreen extends Screen {
             ExampleModClient.targetLanguage = selected.substring(1, 3).toLowerCase();
             saveSettings();
         });
+        langDropdown.setPrefix("Idioma: ");
 
         // Dropdown Color de Texto
         List<String> colorOptions = Arrays.asList("§fBlanco", "§eAmarillo", "§aVerde", "§cRojo", "§bCeleste", "§dRosa", "§6Naranja", "§7Gris");
@@ -78,6 +79,7 @@ public class TranslatorOptionsScreen extends Screen {
             ConfigManager.textColor = selected.substring(0, 2);
             saveSettings();
         });
+        colorDropdown.setPrefix("Color F.: ");
 
         // TextFieldWidget para API Key
         this.apiKeyField = new TextFieldWidget(this.textRenderer, centerX - 100, startY + 90, 200, 20, Text.literal("API Key"));
@@ -121,7 +123,7 @@ public class TranslatorOptionsScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 10, 0xFFFFFFFF);
-        context.drawTextWithShadow(this.textRenderer, "Hypixel API Key:", this.width / 2 - 100, 60, 0xFFA0A0A0);
+        context.drawTextWithShadow(this.textRenderer, "Hypixel API Key:", this.width / 2 - 100, 105, 0xFFA0A0A0);
     }
 
     @Override

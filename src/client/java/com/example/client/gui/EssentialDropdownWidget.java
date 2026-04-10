@@ -58,6 +58,12 @@ public class EssentialDropdownWidget extends ClickableWidget {
         return false;
     }
 
+    private String prefix = "Idioma: ";
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         boolean mainHovered = mouseX >= this.getX() && mouseY >= this.getY() && mouseX < this.getX() + this.width && mouseY < this.getY() + this.height;
@@ -72,7 +78,7 @@ public class EssentialDropdownWidget extends ClickableWidget {
         context.fill(this.getX(), this.getY(), this.getX() + 1, this.getY() + this.height, borderColor);
         context.fill(this.getX() + this.width - 1, this.getY(), this.getX() + this.width, this.getY() + this.height, borderColor);
         
-        String displayText = "Idioma: " + options.get(selectedIndex);
+        String displayText = prefix + options.get(selectedIndex);
         int textX = this.getX() + 5;
         int textY = this.getY() + (this.height - MinecraftClient.getInstance().textRenderer.fontHeight) / 2 + 1;
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, displayText, textX, textY, 0xFFFFFFFF);
@@ -101,6 +107,7 @@ public class EssentialDropdownWidget extends ClickableWidget {
                     context.fill(this.getX() + 1, optY, this.getX() + this.width - 1, optY + OPTION_HEIGHT, 0x884444FF);
                 }
                 
+                // Opción dibujada sin el prefijo superior, pero con su propio texto
                 context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, options.get(i), this.getX() + 5, optY + 6, optHovered ? 0xFFFFFFFF : 0xFFAAAAAA);
             }
         }
