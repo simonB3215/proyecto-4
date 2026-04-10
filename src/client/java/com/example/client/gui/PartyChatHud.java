@@ -67,7 +67,7 @@ public class PartyChatHud {
             context.fill(-2, currentY - 1, width, currentY + client.textRenderer.fontHeight + 1, 0x80000000);
             
             // Renderizar texto con sombra
-            context.drawTextWithShadow(client.textRenderer, msg.message, 0, currentY, 0xFFFFFF);
+            context.drawTextWithShadow(client.textRenderer, msg.message, 0, currentY, -1);
             currentY += client.textRenderer.fontHeight + 3;
         }
         

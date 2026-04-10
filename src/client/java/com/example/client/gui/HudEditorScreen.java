@@ -23,6 +23,16 @@ public class HudEditorScreen extends Screen {
     private boolean wasMouseDown = false;
 
     @Override
+    protected void init() {
+        super.init();
+        this.addDrawableChild(net.minecraft.client.gui.widget.ButtonWidget.builder(Text.literal("Centrar HUD Automáticamente"), button -> {
+            ConfigManager.hudX = (int) (this.width / 2 - (MOCK_WIDTH * ConfigManager.hudScale) / 2);
+            ConfigManager.hudY = (int) (this.height / 2 - (MOCK_HEIGHT * ConfigManager.hudScale) / 2);
+            ConfigManager.saveConfig();
+        }).dimensions(this.width / 2 - 100, 40, 200, 20).build());
+    }
+
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (verticalAmount > 0) {
             ConfigManager.hudScale += 0.05f;
@@ -86,14 +96,14 @@ public class HudEditorScreen extends Screen {
             context.fill(MOCK_WIDTH, 0, MOCK_WIDTH + 1, MOCK_HEIGHT, 0xFF00FF00); // Right
         }
         
-        context.drawTextWithShadow(this.textRenderer, "§9Party > §fNotch: §eHola Mundo!", 4, 5, 0xFFFFFF);
-        context.drawTextWithShadow(this.textRenderer, "§9Party > §fSimon: §eEscala al " + (int)(scale*100) + "%", 4, 20, 0xFFFFFF);
+        context.drawTextWithShadow(this.textRenderer, "§9Party > §fNotch: §eHola Mundo!", 4, 5, -1);
+        context.drawTextWithShadow(this.textRenderer, "§9Party > §fSimon: §eEscala al " + (int)(scale*100) + "%", 4, 20, -1);
         
         context.getMatrices().popMatrix();
         
         context.drawCenteredTextWithShadow(this.textRenderer, "§c§lMODO EDITOR", this.width / 2, 20, 0xFF0000);
-        context.drawCenteredTextWithShadow(this.textRenderer, "Arrastra la caja para mover el Chat de Party", this.width / 2, this.height - 40, 0xFFFFFF);
-        context.drawCenteredTextWithShadow(this.textRenderer, "Gira la Rueda del Ratón para aumentar/reducir el tamaño", this.width / 2, this.height - 25, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(this.textRenderer, "Arrastra la caja para mover el Chat de Party", this.width / 2, this.height - 40, -1);
+        context.drawCenteredTextWithShadow(this.textRenderer, "Gira la Rueda del Ratón para aumentar/reducir el tamaño", this.width / 2, this.height - 25, -1);
         context.drawCenteredTextWithShadow(this.textRenderer, "Pulsa §e[ESC]§f para guardar y volver", this.width / 2, this.height - 10, 0xAAAAAA);
     }
 
