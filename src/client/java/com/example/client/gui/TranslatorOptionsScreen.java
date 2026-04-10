@@ -16,8 +16,8 @@ public class TranslatorOptionsScreen extends Screen {
 
     private final Screen parent;
     private TextFieldWidget apiKeyField;
-    private ButtonWidget toggleButton;
-    private ButtonWidget langButton;
+    private EssentialButtonWidget toggleButton;
+    private EssentialButtonWidget langButton;
     
     private static final List<String> LANGUAGES = Arrays.asList("es", "en", "pl", "fr", "de", "ru", "pt", "it");
 
@@ -40,76 +40,76 @@ public class TranslatorOptionsScreen extends Screen {
         int startY = 30;
 
         // Botón Activar/Desactivar
-        this.toggleButton = ButtonWidget.builder(Text.literal("Traductor: " + (ExampleModClient.isEnabled ? "ON" : "OFF")), button -> {
+        this.toggleButton = new EssentialButtonWidget(centerX - 102, startY, 100, 20, () -> Text.literal("Traductor: " + (ExampleModClient.isEnabled ? "§aON" : "§cOFF")), () -> {
             ExampleModClient.isEnabled = !ExampleModClient.isEnabled;
-            button.setMessage(Text.literal("Traductor: " + (ExampleModClient.isEnabled ? "ON" : "OFF")));
             sendAestheticMessage(ExampleModClient.isEnabled);
             saveSettings();
-        }).dimensions(centerX - 102, startY, 100, 20).build();
+        });
         this.addDrawableChild(toggleButton);
 
         // Botón Modo Traducción
-        this.addDrawableChild(ButtonWidget.builder(Text.literal(ExampleModClient.translateMode.equals("PARTY") ? "Modo: PARTY" : "Modo: GLOBAL"), button -> {
+        this.addDrawableChild(new EssentialButtonWidget(centerX + 2, startY, 100, 20, () -> Text.literal(ExampleModClient.translateMode.equals("PARTY") ? "Modo: PARTY" : "Modo: GLOBAL"), () -> {
             ExampleModClient.translateMode = ExampleModClient.translateMode.equals("PARTY") ? "ALL" : "PARTY";
-            button.setMessage(Text.literal(ExampleModClient.translateMode.equals("PARTY") ? "Modo: PARTY" : "Modo: GLOBAL"));
             saveSettings();
-        }).dimensions(centerX + 2, startY, 100, 20).build());
+        }));
 
-        // Botón Ciclo de Idioma
-        this.langButton = ButtonWidget.builder(Text.literal("Idioma: " + ExampleModClient.targetLanguage.toUpperCase()), button -> {
-            int index = LANGUAGES.indexOf(ExampleModClient.targetLanguage);
-            if (index == -1 || index == LANGUAGES.size() - 1) {
-                ExampleModClient.targetLanguage = LANGUAGES.get(0);
-            } else {
-                ExampleModClient.targetLanguage = LANGUAGES.get(index + 1);
+        // Menú Desplegable de Idiomas (Banderas/Nombres estilizados)
+        List<String> langOptions = Arrays.asList("[ES] Español", "[EN] English", "[PL] Polski", "[FR] Français", "[DE] Deutsch", "[RU] Русский", "[PT] Português", "[IT] Italiano");
+        String currentLangStr = "[ES] Español";
+        for (String opt : langOptions) {
+            if (opt.toLowerCase().contains("[" + ExampleModClient.targetLanguage + "]")) {
+                currentLangStr = opt; break;
             }
-            button.setMessage(Text.literal("Idioma: " + ExampleModClient.targetLanguage.toUpperCase()));
+        }
+        
+        EssentialDropdownWidget langDropdown = new EssentialDropdownWidget(centerX - 100, startY + 25, 200, 20, Text.empty(), langOptions, currentLangStr, selected -> {
+            ExampleModClient.targetLanguage = selected.substring(1, 3).toLowerCase();
             saveSettings();
-        }).dimensions(centerX - 100, startY + 30, 200, 20).build();
-        this.addDrawableChild(langButton);
+        });
+
+        // Dropdown Color de Texto
+        List<String> colorOptions = Arrays.asList("§fBlanco", "§eAmarillo", "§aVerde", "§cRojo", "§bCeleste", "§dRosa", "§6Naranja", "§7Gris");
+        String currentColorStr = "§eAmarillo";
+        for (String c : colorOptions) {
+            if (c.startsWith(ConfigManager.textColor)) { currentColorStr = c; break; }
+        }
+        
+        EssentialDropdownWidget colorDropdown = new EssentialDropdownWidget(centerX - 100, startY + 50, 200, 20, Text.empty(), colorOptions, currentColorStr, selected -> {
+            ConfigManager.textColor = selected.substring(0, 2);
+            saveSettings();
+        });
 
         // TextFieldWidget para API Key
-        this.apiKeyField = new TextFieldWidget(this.textRenderer, centerX - 100, startY + 75, 200, 20, Text.literal("API Key"));
+        this.apiKeyField = new TextFieldWidget(this.textRenderer, centerX - 100, startY + 90, 200, 20, Text.literal("API Key"));
         this.apiKeyField.setMaxLength(100);
         this.apiKeyField.setText(ConfigManager.apiKey);
         this.addDrawableChild(this.apiKeyField);
 
-        // Botón Sincronizar Hypixel
-        ButtonWidget syncButton = ButtonWidget.builder(Text.literal("Sincronizar desde Hypixel"), button -> {
+        // Botines de Acción Extendida
+        this.addDrawableChild(new EssentialButtonWidget(centerX - 100, startY + 115, 200, 20, Text.literal("Sincronizar desde Hypixel"), () -> {
             saveSettings();
-            button.setMessage(Text.literal("Sincronizando..."));
             HypixelApiHelper.syncLanguageFromHypixel(ConfigManager.apiKey).thenAccept(lang -> {
                 if (lang != null && this.client != null) {
                     ExampleModClient.targetLanguage = lang;
                     saveSettings();
-                    this.client.execute(() -> {
-                        langButton.setMessage(Text.literal("Idioma: " + ExampleModClient.targetLanguage.toUpperCase()));
-                        button.setMessage(Text.literal("¡Sincronizado con Hypixel!"));
-                    });
-                } else if (this.client != null) {
-                    this.client.execute(() -> {
-                        button.setMessage(Text.literal("Error: ¡Llave inválida u oculta!"));
-                    });
+                    this.client.execute(() -> this.client.setScreen(new TranslatorOptionsScreen(this.parent))); // Reload screen
                 }
             });
-        }).dimensions(centerX - 100, startY + 100, 200, 20).build();
-        this.addDrawableChild(syncButton);
+        }));
 
-        // GUI Editor Button
-        ButtonWidget editHudButton = ButtonWidget.builder(Text.literal("Reposicionar Chat Traducido"), button -> {
+        this.addDrawableChild(new EssentialButtonWidget(centerX - 100, startY + 140, 200, 20, Text.literal("Reposicionar Chat Traducido"), () -> {
             saveSettings();
-            if (this.client != null) {
-                this.client.setScreen(new HudEditorScreen(this));
-            }
-        }).dimensions(centerX - 100, startY + 130, 200, 20).build();
-        this.addDrawableChild(editHudButton);
+            if (this.client != null) this.client.setScreen(new HudEditorScreen(this));
+        }));
 
-        // Botón Guardar y Salir
-        ButtonWidget closeButton = ButtonWidget.builder(Text.literal("Cerrar"), button -> {
+        this.addDrawableChild(new EssentialButtonWidget(centerX - 100, this.height - 30, 200, 20, Text.literal("Guardar y Cerrar"), () -> {
             saveSettings();
             if(this.client != null) this.client.setScreen(this.parent);
-        }).dimensions(centerX - 100, this.height - 30, 200, 20).build();
-        this.addDrawableChild(closeButton);
+        }));
+        
+        // Añadir dropdowns al final para que queden on top (últimos dibujados = renderizados encima de otros widgets normales, aunque EssentialDropdownWidget maneja Z-index 300)
+        this.addDrawableChild(colorDropdown);
+        this.addDrawableChild(langDropdown);
     }
 
     private void saveSettings() {

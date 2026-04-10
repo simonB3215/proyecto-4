@@ -93,7 +93,7 @@ public class ExampleModClient implements ClientModInitializer {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.inGameHud != null) {
                 client.execute(() -> {
-                    Text vanilatxt = Text.literal("§9" + prefix + "§f" + userPart + "§e" + translatedText);
+                    Text vanilatxt = Text.literal("§9" + prefix + "§f" + userPart + ConfigManager.textColor + translatedText);
                     com.example.client.gui.PartyChatHud.addMessage(vanilatxt);
                 });
             }

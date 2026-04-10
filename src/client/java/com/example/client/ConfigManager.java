@@ -17,6 +17,7 @@ public class ConfigManager {
     public static int hudX = 10;
     public static int hudY = 10;
     public static float hudScale = 1.0f;
+    public static String textColor = "§e";
 
     public static void loadConfig() {
         if (CONFIG_FILE.exists()) {
@@ -26,6 +27,7 @@ public class ConfigManager {
                 if (json.has("targetLanguage")) ExampleModClient.targetLanguage = json.get("targetLanguage").getAsString();
                 if (json.has("translateMode")) ExampleModClient.translateMode = json.get("translateMode").getAsString();
                 if (json.has("apiKey")) apiKey = json.get("apiKey").getAsString();
+                if (json.has("textColor")) textColor = json.get("textColor").getAsString();
                 if (json.has("hudX")) hudX = json.get("hudX").getAsInt();
                 if (json.has("hudY")) hudY = json.get("hudY").getAsInt();
                 if (json.has("hudScale")) hudScale = json.get("hudScale").getAsFloat();
@@ -44,6 +46,7 @@ public class ConfigManager {
             json.addProperty("targetLanguage", ExampleModClient.targetLanguage);
             json.addProperty("translateMode", ExampleModClient.translateMode);
             json.addProperty("apiKey", apiKey);
+            json.addProperty("textColor", textColor);
             json.addProperty("hudX", hudX);
             json.addProperty("hudY", hudY);
             json.addProperty("hudScale", hudScale);
