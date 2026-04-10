@@ -34,7 +34,6 @@ public class ExampleModClient implements ClientModInitializer {
         // Registrar Atajo de Teclado (Keybind 'V' por defecto)
         KeyMapping openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
             "key.translator.open_menu", 
-            InputConstants.Type.KEYSYM, 
             GLFW.GLFW_KEY_V, 
             "category.translator"
         ));
