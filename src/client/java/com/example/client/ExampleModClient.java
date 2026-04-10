@@ -85,9 +85,7 @@ public class ExampleModClient implements ClientModInitializer {
                     if (client.inGameHud != null) {
                         client.execute(() -> {
                             Text vanilatxt = Text.literal("§9\u200B" + prefix + "§f" + userPart + "§e" + translatedText);
-                            // Enviar a Vanilla Chat
-                            client.inGameHud.getChatHud().addMessage(vanilatxt);
-                            // Enviar a PartyChatHud exclusivo
+                            // Enviar a PartyChatHud exclusivo únicamente
                             com.example.client.gui.PartyChatHud.addMessage(vanilatxt);
                         });
                     }

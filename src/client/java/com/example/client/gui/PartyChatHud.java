@@ -20,7 +20,7 @@ public class PartyChatHud {
         
         public PartyMessage(Text message) {
             this.message = message;
-            this.addedTime = Util.getMeasuringTimeMs();
+            this.addedTime = System.currentTimeMillis();
         }
     }
     
@@ -40,7 +40,7 @@ public class PartyChatHud {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.options.hudHidden) return;
         
-        long currentTime = Util.getMeasuringTimeMs();
+        long currentTime = System.currentTimeMillis();
         
         // Remove expired messages gracefully
         Iterator<PartyMessage> iterator = MESSAGES.iterator();
