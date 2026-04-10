@@ -29,7 +29,8 @@ public class PartyChatHud {
     
     public static void addMessage(Text text) {
         MESSAGES.add(new PartyMessage(text));
-        if (MESSAGES.size() > 50) {
+        // Reducido a 10 mensajes máximo para evitar que tapen la pantalla
+        if (MESSAGES.size() > 10) {
             MESSAGES.remove(0);
         }
     }
