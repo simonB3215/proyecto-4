@@ -100,11 +100,9 @@ public class TranslatorOptionsScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            ConfigManager.apiKey = this.apiKeyField.getValue();
-            ConfigManager.saveConfig();
-        }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+    public void removed() {
+        ConfigManager.apiKey = this.apiKeyField.getValue();
+        ConfigManager.saveConfig();
+        super.removed();
     }
 }

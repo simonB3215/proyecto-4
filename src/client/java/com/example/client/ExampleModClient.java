@@ -31,38 +31,17 @@ public class ExampleModClient implements ClientModInitializer {
         // Cargar Configuración almacenada localmente
         ConfigManager.loadConfig();
 
-        // Registrar Atajo de Teclado (Keybind 'V' por defecto)
-        KeyMapping openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-            "key.translator.open_menu", 
-            GLFW.GLFW_KEY_V, 
-            "category.translator"
-        ));
-
-        // Evento de Tick para abrir el menú visual
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (openMenuKey.consumeClick()) {
-                client.setScreen(new TranslatorOptionsScreen(client.screen));
-            }
-        });
-
-        // Comando /translator
+        // Registrar Comando para abrir menú gráfico
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
             dispatcher.register(ClientCommandManager.literal("translator")
-                .then(ClientCommandManager.literal("toggle")
+                .then(ClientCommandManager.literal("menu")
                     .executes(context -> {
-                        isEnabled = !isEnabled;
-                        context.getSource().sendFeedback(Component.literal("§aTraductor " + (isEnabled ? "Activado" : "Desactivado")));
+                        Minecraft client = Minecraft.getInstance();
+                        client.execute(() -> {
+                            client.setScreen(new TranslatorOptionsScreen(client.screen));
+                        });
                         return 1;
                     })
-                )
-                .then(ClientCommandManager.literal("lang")
-                    .then(ClientCommandManager.argument("language", StringArgumentType.word())
-                        .executes(context -> {
-                            targetLanguage = StringArgumentType.getString(context, "language");
-                            context.getSource().sendFeedback(Component.literal("§aIdioma de traducción cambiado a: §e" + targetLanguage.toUpperCase()));
-                            return 1;
-                        })
-                    )
                 )
             );
         });
