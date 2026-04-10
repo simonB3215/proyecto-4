@@ -72,15 +72,5 @@ public class ExampleModClient implements ClientModInitializer {
             return true; // Permite que se muestren los demás mensajes
         });
 
-        // Renderizado del HUD en pantalla
-        HudRenderCallback.EVENT.register((guiGraphics, tickCounter) -> {
-            if (!isEnabled) return; // Si está desactivado, ocultar HUD
-
-            Minecraft client = Minecraft.getInstance();
-            if (client.font != null) {
-                // Quitamos el parámetro 'boolean dropShadow' ya que en algunas sub-versiones produce un NoSuchMethodError
-                guiGraphics.drawString(client.font, "Traducción: " + targetLanguage.toUpperCase(), 5, 5, 0xFFFFFF);
-            }
-        });
     }
 }
