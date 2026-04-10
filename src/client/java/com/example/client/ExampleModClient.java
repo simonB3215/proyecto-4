@@ -64,6 +64,16 @@ public class ExampleModClient implements ClientModInitializer {
                 }
             });
         });
+        // Botón en la pantalla de chat
+        net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((clientInstance, screen, scaledWidth, scaledHeight) -> {
+            if (screen instanceof net.minecraft.client.gui.screen.ChatScreen) {
+                net.fabricmc.fabric.api.client.screen.v1.Screens.getButtons(screen).add(
+                    net.minecraft.client.gui.widget.ButtonWidget.builder(Text.literal("Trad."), btn -> {
+                        clientInstance.setScreen(new TranslatorOptionsScreen(screen));
+                    }).dimensions(scaledWidth - 45, scaledHeight - 35, 40, 20).build()
+                );
+            }
+        });
     }
 
     public static void checkPartyChat(String rawText) {
@@ -94,7 +104,11 @@ public class ExampleModClient implements ClientModInitializer {
             if (client.inGameHud != null) {
                 client.execute(() -> {
                     Text vanilatxt = Text.literal("§9" + prefix + "§f" + userPart + ConfigManager.textColor + translatedText);
-                    com.example.client.gui.PartyChatHud.addMessage(vanilatxt);
+                    if (ConfigManager.combinedMode) {
+                        client.inGameHud.getChatHud().addMessage(vanilatxt);
+                    } else {
+                        com.example.client.gui.PartyChatHud.addMessage(vanilatxt);
+                    }
                 });
             }
         });

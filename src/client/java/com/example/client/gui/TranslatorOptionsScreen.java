@@ -23,6 +23,7 @@ public class TranslatorOptionsScreen extends Screen {
     private ButtonWidget syncButton;
     private ButtonWidget posButton;
     private ButtonWidget bgButton;
+    private ButtonWidget viewModeButton;
     private ButtonWidget closeButton;
 
     private boolean langExpanded = false;
@@ -113,9 +114,16 @@ public class TranslatorOptionsScreen extends Screen {
         this.bgButton = ButtonWidget.builder(Text.empty(), btn -> {
             ConfigManager.showBackground = !ConfigManager.showBackground;
             saveSettings();
-        }).dimensions(centerX - 100, startY + 165, 200, 20).build();
+        }).dimensions(centerX - 102, startY + 165, 100, 20).build();
         this.bgButton.setAlpha(0.0f);
         this.addDrawableChild(bgButton);
+
+        this.viewModeButton = ButtonWidget.builder(Text.empty(), btn -> {
+            ConfigManager.combinedMode = !ConfigManager.combinedMode;
+            saveSettings();
+        }).dimensions(centerX + 2, startY + 165, 100, 20).build();
+        this.viewModeButton.setAlpha(0.0f);
+        this.addDrawableChild(viewModeButton);
 
         this.closeButton = ButtonWidget.builder(Text.empty(), btn -> {
             saveSettings();
@@ -142,6 +150,7 @@ public class TranslatorOptionsScreen extends Screen {
         if (this.syncButton != null) this.syncButton.active = !anyExpanded;
         if (this.posButton != null) this.posButton.active = !anyExpanded;
         if (this.bgButton != null) this.bgButton.active = !anyExpanded;
+        if (this.viewModeButton != null) this.viewModeButton.active = !anyExpanded;
         if (this.closeButton != null) this.closeButton.active = !anyExpanded;
 
         if (langExpanded) {
@@ -223,7 +232,8 @@ public class TranslatorOptionsScreen extends Screen {
 
         drawEssentialAesthetic(context, syncButton, "Sincronizar desde Hypixel", mouseX, mouseY, false, false);
         drawEssentialAesthetic(context, posButton, "Reposicionar Chat Traducido", mouseX, mouseY, false, false);
-        drawEssentialAesthetic(context, bgButton, "Fondo Opaco: " + (ConfigManager.showBackground ? "§aON" : "§cOFF"), mouseX, mouseY, false, false);
+        drawEssentialAesthetic(context, bgButton, ConfigManager.showBackground ? "Fondo: ON" : "Fondo: OFF", mouseX, mouseY, false, false);
+        drawEssentialAesthetic(context, viewModeButton, ConfigManager.combinedMode ? "Chat: General" : "Chat: Dividido", mouseX, mouseY, false, false);
         drawEssentialAesthetic(context, closeButton, "Guardar y Cerrar", mouseX, mouseY, false, false);
 
         if (langExpanded) {

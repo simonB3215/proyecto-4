@@ -19,6 +19,7 @@ public class ConfigManager {
     public static float hudScale = 1.0f;
     public static String textColor = "§e";
     public static boolean showBackground = true;
+    public static boolean combinedMode = false;
 
     public static void loadConfig() {
         if (CONFIG_FILE.exists()) {
@@ -33,6 +34,7 @@ public class ConfigManager {
                 if (json.has("hudY")) hudY = json.get("hudY").getAsInt();
                 if (json.has("hudScale")) hudScale = json.get("hudScale").getAsFloat();
                 if (json.has("showBackground")) showBackground = json.get("showBackground").getAsBoolean();
+                if (json.has("combinedMode")) combinedMode = json.get("combinedMode").getAsBoolean();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -53,6 +55,7 @@ public class ConfigManager {
             json.addProperty("hudY", hudY);
             json.addProperty("hudScale", hudScale);
             json.addProperty("showBackground", showBackground);
+            json.addProperty("combinedMode", combinedMode);
             GSON.toJson(json, writer);
         } catch (Exception e) {
             e.printStackTrace();
