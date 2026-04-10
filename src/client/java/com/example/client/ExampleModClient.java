@@ -61,7 +61,8 @@ public class ExampleModClient implements ClientModInitializer {
                         Minecraft client = Minecraft.getInstance();
                         if (client.gui != null) {
                             client.execute(() -> {
-                                client.gui.getChat().addMessage(Component.literal("§9Party > §f" + rawText.substring(8, prefix.length()) + "§e" + translatedText));
+                                // Agregamos \u200B (espacio invisible) para evitar que ESTE mismo mensaje vuelva a activar el Listener en un bucle infinito
+                                client.gui.getChat().addMessage(Component.literal("§9\u200BParty > §f" + rawText.substring(8, prefix.length()) + "§e" + translatedText));
                             });
                         }
                     });
@@ -77,8 +78,8 @@ public class ExampleModClient implements ClientModInitializer {
 
             Minecraft client = Minecraft.getInstance();
             if (client.font != null) {
-                // Color blanco (0xFFFFFF), con sombra (true) en la esquina superior izquierda
-                guiGraphics.drawString(client.font, "Traducción: " + targetLanguage.toUpperCase(), 5, 5, 0xFFFFFF, true);
+                // Quitamos el parámetro 'boolean dropShadow' ya que en algunas sub-versiones produce un NoSuchMethodError
+                guiGraphics.drawString(client.font, "Traducción: " + targetLanguage.toUpperCase(), 5, 5, 0xFFFFFF);
             }
         });
     }
