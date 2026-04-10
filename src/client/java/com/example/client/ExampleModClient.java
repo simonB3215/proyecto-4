@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 
 public class ExampleModClient implements ClientModInitializer {
 
-    private static final Pattern PARTY_CHAT_PATTERN = Pattern.compile(".*?((?:Party|Grupo) > )(.*?: )(.*)", Pattern.DOTALL);
-    
+    private static final Pattern PARTY_CHAT_PATTERN = Pattern.compile(".*?((?:Party|Grupo).*?>\\s*)(.*?:\\s*)(.*)", Pattern.DOTALL);
+
     // Variables de estado
     public static boolean isEnabled = true;
     public static String targetLanguage = "es";
@@ -49,20 +49,6 @@ public class ExampleModClient implements ClientModInitializer {
         // Registrar Evento del Custom HUD Overlay
         net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register(com.example.client.gui.PartyChatHud::render);
 
-        // Evento de Intercepción de Chat de Jugadores (Con firma criptográfica)
-        ClientReceiveMessageEvents.ALLOW_CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> {
-            if (!isEnabled) return true;
-            processMessage(message.getString());
-            return true; // Siempre permitimos que el chat de vanilla reciba el original
-        });
-
-        // Evento de Intercepción del Sistema (Usado por /tellraw, y por servidores grandes como Hypixel)
-        ClientReceiveMessageEvents.ALLOW_GAME.register((message, overlay) -> {
-            if (!isEnabled || overlay) return true;
-            processMessage(message.getString());
-            return true; // Siempre permitimos que el chat de vanilla reciba el original
-        });
-
         // Mensaje de bienvenida al unirse a un servidor o mundo
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             String version = net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer("modid")
@@ -78,14 +64,22 @@ public class ExampleModClient implements ClientModInitializer {
         });
     }
 
+    public static void checkPartyChat(String rawText) {
+        if (!isEnabled) return;
+        processMessage(rawText);
+    }
+
     private static void processMessage(String rawText) {
-        if ((rawText.contains("Party >") || rawText.contains("Grupo >")) && !rawText.contains("\u200B")) {
+        if ((rawText.contains("Party") || rawText.contains("Grupo")) && !rawText.contains("\u200B")) {
             Matcher matcher = PARTY_CHAT_PATTERN.matcher(rawText);
             if (matcher.matches()) {
                 String prefix = matcher.group(1);
                 String userPart = matcher.group(2);
                 String textToTranslate = matcher.group(3);
 
+                // Evitar traducir si el mensaje es del sistema "X se unió a la party" (No tiene ':')
+                // La regex ya exige ':', así que sabemos que es chat de usuario real.
+                
                 TranslatorHelper.translateAsync(textToTranslate, targetLanguage).thenAccept(translatedText -> {
                     MinecraftClient client = MinecraftClient.getInstance();
                     if (client.inGameHud != null) {
@@ -98,13 +92,6 @@ public class ExampleModClient implements ClientModInitializer {
                         });
                     }
                 });
-            } else {
-                MinecraftClient client = MinecraftClient.getInstance();
-                if (client.inGameHud != null) {
-                    client.execute(() -> {
-                        client.inGameHud.getChatHud().addMessage(Text.literal("§c[DEBUG Traductor] Regex falló en el texto: §f" + rawText));
-                    });
-                }
             }
         }
     }
