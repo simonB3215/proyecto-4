@@ -28,12 +28,16 @@ public class ExampleModClient implements ClientModInitializer {
         // Cargar Configuración almacenada localmente
         ConfigManager.loadConfig();
 
-        // Registrar Atajo de Teclado usando Yarn Mappings
+        // Registrar Atajo de Teclado usando Yarn Mappings 1.21.11 (KeyBinding.Category)
+        KeyBinding.Category CATEGORY = new KeyBinding.Category(
+            net.minecraft.util.Identifier.of("translator", "main")
+        );
+
         KeyBinding openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
             "key.translator.open_menu", 
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_V, 
-            "category.translator"
+            CATEGORY
         ));
 
         // Evento de Tick para abrir el menú visual
