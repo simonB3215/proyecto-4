@@ -22,6 +22,7 @@ public class TranslatorOptionsScreen extends Screen {
     private ButtonWidget colorDropdownBtn;
     private ButtonWidget syncButton;
     private ButtonWidget posButton;
+    private ButtonWidget bgButton;
     private ButtonWidget closeButton;
 
     private boolean langExpanded = false;
@@ -109,6 +110,13 @@ public class TranslatorOptionsScreen extends Screen {
         this.posButton.setAlpha(0.0f);
         this.addDrawableChild(posButton);
 
+        this.bgButton = ButtonWidget.builder(Text.empty(), btn -> {
+            ConfigManager.showBackground = !ConfigManager.showBackground;
+            saveSettings();
+        }).dimensions(centerX - 100, startY + 165, 200, 20).build();
+        this.bgButton.setAlpha(0.0f);
+        this.addDrawableChild(bgButton);
+
         this.closeButton = ButtonWidget.builder(Text.empty(), btn -> {
             saveSettings();
             if(this.client != null) this.client.setScreen(this.parent);
@@ -124,6 +132,17 @@ public class TranslatorOptionsScreen extends Screen {
         for(ButtonWidget opt : colorOptionButtons) this.remove(opt);
         langOptionButtons.clear();
         colorOptionButtons.clear();
+
+        boolean anyExpanded = langExpanded || colorExpanded;
+        if (this.toggleButton != null) this.toggleButton.active = !anyExpanded;
+        if (this.modeButton != null) this.modeButton.active = !anyExpanded;
+        if (this.langDropdownBtn != null) this.langDropdownBtn.active = !colorExpanded;
+        if (this.colorDropdownBtn != null) this.colorDropdownBtn.active = !langExpanded;
+        if (this.apiKeyField != null) this.apiKeyField.setEditable(!anyExpanded);
+        if (this.syncButton != null) this.syncButton.active = !anyExpanded;
+        if (this.posButton != null) this.posButton.active = !anyExpanded;
+        if (this.bgButton != null) this.bgButton.active = !anyExpanded;
+        if (this.closeButton != null) this.closeButton.active = !anyExpanded;
 
         if (langExpanded) {
             int my = langDropdownBtn.getY() + 20;
@@ -204,6 +223,7 @@ public class TranslatorOptionsScreen extends Screen {
 
         drawEssentialAesthetic(context, syncButton, "Sincronizar desde Hypixel", mouseX, mouseY, false, false);
         drawEssentialAesthetic(context, posButton, "Reposicionar Chat Traducido", mouseX, mouseY, false, false);
+        drawEssentialAesthetic(context, bgButton, "Fondo Opaco: " + (ConfigManager.showBackground ? "§aON" : "§cOFF"), mouseX, mouseY, false, false);
         drawEssentialAesthetic(context, closeButton, "Guardar y Cerrar", mouseX, mouseY, false, false);
 
         if (langExpanded) {

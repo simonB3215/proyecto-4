@@ -81,12 +81,12 @@ public class PartyChatHud {
             int textAlphaInt = (int) (alpha * 255.0f);
             int textColor = (textAlphaInt << 24) | 0x00FFFFFF;
             
-            int bgAlphaInt = (int) (alpha * 128.0f); // Máximo 50% opacidad del fondo negro
+            // Incrementado la opacidad a 180 para que se vea un rectángulo más 'opaco'
+            int bgAlphaInt = (int) (alpha * 180.0f); 
             int bgColor = (bgAlphaInt << 24) | 0x000000;
 
             List<net.minecraft.text.OrderedText> lines = client.textRenderer.wrapLines(msg.message, maxWidth);
             
-            // Determinar ancho unificado para estabilizar estéticamente el texto de todo el bloque
             int blockWidth = 0;
             for (net.minecraft.text.OrderedText line : lines) {
                 int w = client.textRenderer.getWidth(line);
@@ -95,8 +95,9 @@ public class PartyChatHud {
             
             int blockHeight = lines.size() * (client.textRenderer.fontHeight + 3);
             
-            // Dibujar recuadro de fondo centralizado una sola vez por mensaje para evitar franjas
-            context.fill(-2, currentY - 2, blockWidth + 4, currentY + blockHeight - 1, bgColor);
+            if (ConfigManager.showBackground) {
+                context.fill(-2, currentY - 2, blockWidth + 4, currentY + blockHeight - 1, bgColor);
+            }
             
             for (net.minecraft.text.OrderedText line : lines) {
                 context.drawTextWithShadow(client.textRenderer, line, 0, currentY, textColor);
