@@ -14,6 +14,9 @@ public class ConfigManager {
     private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "party_translator.json");
 
     public static String apiKey = "";
+    public static int hudX = 10;
+    public static int hudY = 10;
+    public static float hudScale = 1.0f;
 
     public static void loadConfig() {
         if (CONFIG_FILE.exists()) {
@@ -22,6 +25,9 @@ public class ConfigManager {
                 if (json.has("isEnabled")) ExampleModClient.isEnabled = json.get("isEnabled").getAsBoolean();
                 if (json.has("targetLanguage")) ExampleModClient.targetLanguage = json.get("targetLanguage").getAsString();
                 if (json.has("apiKey")) apiKey = json.get("apiKey").getAsString();
+                if (json.has("hudX")) hudX = json.get("hudX").getAsInt();
+                if (json.has("hudY")) hudY = json.get("hudY").getAsInt();
+                if (json.has("hudScale")) hudScale = json.get("hudScale").getAsFloat();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -36,6 +42,9 @@ public class ConfigManager {
             json.addProperty("isEnabled", ExampleModClient.isEnabled);
             json.addProperty("targetLanguage", ExampleModClient.targetLanguage);
             json.addProperty("apiKey", apiKey);
+            json.addProperty("hudX", hudX);
+            json.addProperty("hudY", hudY);
+            json.addProperty("hudScale", hudScale);
             GSON.toJson(json, writer);
         } catch (Exception e) {
             e.printStackTrace();

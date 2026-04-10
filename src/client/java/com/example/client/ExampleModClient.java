@@ -47,20 +47,25 @@ public class ExampleModClient implements ClientModInitializer {
             }
         });
 
+        // Registrar Evento del Custom HUD Overlay
+        net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register(com.example.client.gui.PartyChatHud::render);
+
         // Evento de Intercepción de Chat de Jugadores (Con firma criptográfica)
         ClientReceiveMessageEvents.ALLOW_CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> {
             if (!isEnabled) return true;
-            return processMessage(message.getString());
+            processMessage(message.getString());
+            return true; // Siempre permitimos que el chat de vanilla reciba el original
         });
 
         // Evento de Intercepción del Sistema (Usado por /tellraw, y por servidores grandes como Hypixel)
         ClientReceiveMessageEvents.ALLOW_GAME.register((message, overlay) -> {
             if (!isEnabled || overlay) return true;
-            return processMessage(message.getString());
+            processMessage(message.getString());
+            return true; // Siempre permitimos que el chat de vanilla reciba el original
         });
     }
 
-    private static boolean processMessage(String rawText) {
+    private static void processMessage(String rawText) {
         if (rawText.startsWith("Party >")) {
             Matcher matcher = PARTY_CHAT_PATTERN.matcher(rawText);
             if (matcher.matches()) {
@@ -71,14 +76,15 @@ public class ExampleModClient implements ClientModInitializer {
                     MinecraftClient client = MinecraftClient.getInstance();
                     if (client.inGameHud != null) {
                         client.execute(() -> {
-                            // Agregamos \u200B (espacio invisible) para evitar bucles infinitos
-                            client.inGameHud.getChatHud().addMessage(Text.literal("§9\u200BParty > §f" + rawText.substring(8, prefix.length()) + "§e" + translatedText));
+                            Text vanilatxt = Text.literal("§9\u200BParty > §f" + rawText.substring(8, prefix.length()) + "§e" + translatedText);
+                            // Enviar a Vanilla Chat
+                            client.inGameHud.getChatHud().addMessage(vanilatxt);
+                            // Enviar a PartyChatHud exclusivo
+                            com.example.client.gui.PartyChatHud.addMessage(vanilatxt);
                         });
                     }
                 });
-                return false; // Cancela el mensaje original
             }
         }
-        return true; // Permite el paso de mensajes normales
     }
 }
