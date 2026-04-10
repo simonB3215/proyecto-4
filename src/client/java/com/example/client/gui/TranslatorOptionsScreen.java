@@ -45,8 +45,15 @@ public class TranslatorOptionsScreen extends Screen {
             button.setMessage(Text.literal("Traductor: " + (ExampleModClient.isEnabled ? "ON" : "OFF")));
             sendAestheticMessage(ExampleModClient.isEnabled);
             saveSettings();
-        }).dimensions(centerX - 100, startY, 200, 20).build();
+        }).dimensions(centerX - 102, startY, 100, 20).build();
         this.addDrawableChild(toggleButton);
+
+        // Botón Modo Traducción
+        this.addDrawableChild(ButtonWidget.builder(Text.literal(ExampleModClient.translateMode.equals("PARTY") ? "Modo: PARTY" : "Modo: GLOBAL"), button -> {
+            ExampleModClient.translateMode = ExampleModClient.translateMode.equals("PARTY") ? "ALL" : "PARTY";
+            button.setMessage(Text.literal(ExampleModClient.translateMode.equals("PARTY") ? "Modo: PARTY" : "Modo: GLOBAL"));
+            saveSettings();
+        }).dimensions(centerX + 2, startY, 100, 20).build());
 
         // Botón Ciclo de Idioma
         this.langButton = ButtonWidget.builder(Text.literal("Idioma: " + ExampleModClient.targetLanguage.toUpperCase()), button -> {
@@ -89,7 +96,7 @@ public class TranslatorOptionsScreen extends Screen {
         this.addDrawableChild(syncButton);
 
         // GUI Editor Button
-        ButtonWidget editHudButton = ButtonWidget.builder(Text.literal("Reposicionar Chat de Party"), button -> {
+        ButtonWidget editHudButton = ButtonWidget.builder(Text.literal("Reposicionar Chat Traducido"), button -> {
             saveSettings();
             if (this.client != null) {
                 this.client.setScreen(new HudEditorScreen(this));

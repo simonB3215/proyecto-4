@@ -24,6 +24,7 @@ public class ConfigManager {
                 JsonObject json = GSON.fromJson(reader, JsonObject.class);
                 if (json.has("isEnabled")) ExampleModClient.isEnabled = json.get("isEnabled").getAsBoolean();
                 if (json.has("targetLanguage")) ExampleModClient.targetLanguage = json.get("targetLanguage").getAsString();
+                if (json.has("translateMode")) ExampleModClient.translateMode = json.get("translateMode").getAsString();
                 if (json.has("apiKey")) apiKey = json.get("apiKey").getAsString();
                 if (json.has("hudX")) hudX = json.get("hudX").getAsInt();
                 if (json.has("hudY")) hudY = json.get("hudY").getAsInt();
@@ -41,6 +42,7 @@ public class ConfigManager {
             JsonObject json = new JsonObject();
             json.addProperty("isEnabled", ExampleModClient.isEnabled);
             json.addProperty("targetLanguage", ExampleModClient.targetLanguage);
+            json.addProperty("translateMode", ExampleModClient.translateMode);
             json.addProperty("apiKey", apiKey);
             json.addProperty("hudX", hudX);
             json.addProperty("hudY", hudY);

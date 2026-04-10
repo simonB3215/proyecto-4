@@ -1,6 +1,7 @@
 package com.example.client.gui;
 
 import com.example.client.ConfigManager;
+import com.example.client.ExampleModClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -96,13 +97,14 @@ public class HudEditorScreen extends Screen {
             context.fill(MOCK_WIDTH, 0, MOCK_WIDTH + 1, MOCK_HEIGHT, 0xFF00FF00); // Right
         }
         
-        context.drawTextWithShadow(this.textRenderer, "§9Party > §fNotch: §eHola Mundo!", 4, 5, -1);
-        context.drawTextWithShadow(this.textRenderer, "§9Party > §fSimon: §eEscala al " + (int)(scale*100) + "%", 4, 20, -1);
+        String prefixMock = ExampleModClient.translateMode.equals("PARTY") ? "§9Party > §fNotch: " : "§b[MVP+] Notch: ";
+        context.drawTextWithShadow(this.textRenderer, prefixMock + "§eHola Mundo!", 4, 5, -1);
+        context.drawTextWithShadow(this.textRenderer, prefixMock + "§eEscala al " + (int)(scale*100) + "%", 4, 20, -1);
         
         context.getMatrices().popMatrix();
         
         context.drawCenteredTextWithShadow(this.textRenderer, "§c§lMODO EDITOR", this.width / 2, 20, 0xFF0000);
-        context.drawCenteredTextWithShadow(this.textRenderer, "Arrastra la caja para mover el Chat de Party", this.width / 2, this.height - 40, -1);
+        context.drawCenteredTextWithShadow(this.textRenderer, "Arrastra la caja para mover la ventana de traducción", this.width / 2, this.height - 40, -1);
         context.drawCenteredTextWithShadow(this.textRenderer, "Gira la Rueda del Ratón para aumentar/reducir el tamaño", this.width / 2, this.height - 25, -1);
         context.drawCenteredTextWithShadow(this.textRenderer, "Pulsa §e[ESC]§f para guardar y volver", this.width / 2, this.height - 10, 0xAAAAAA);
     }

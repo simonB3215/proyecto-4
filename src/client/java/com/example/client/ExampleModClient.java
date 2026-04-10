@@ -17,10 +17,12 @@ import java.util.regex.Pattern;
 public class ExampleModClient implements ClientModInitializer {
 
     private static final Pattern PARTY_CHAT_PATTERN = Pattern.compile(".*?((?:Party|Grupo).*?>\\s*)(.*?:\\s*)(.*)", Pattern.DOTALL);
+    private static final Pattern ALL_CHAT_PATTERN = Pattern.compile("^(.*?:\\s+)(.*)$", Pattern.DOTALL);
 
     // Variables de estado
     public static boolean isEnabled = true;
     public static String targetLanguage = "es";
+    public static String translateMode = "PARTY"; // "PARTY" o "ALL"
 
     @Override
     public void onInitializeClient() {
@@ -70,27 +72,31 @@ public class ExampleModClient implements ClientModInitializer {
     }
 
     private static void processMessage(String rawText) {
-        if ((rawText.contains("Party") || rawText.contains("Grupo")) && !rawText.contains("\u200B")) {
-            Matcher matcher = PARTY_CHAT_PATTERN.matcher(rawText);
+        if (translateMode.equals("PARTY")) {
+            if ((rawText.contains("Party") || rawText.contains("Grupo"))) {
+                Matcher matcher = PARTY_CHAT_PATTERN.matcher(rawText);
+                if (matcher.matches()) {
+                    executeTranslation(matcher.group(1), matcher.group(2), matcher.group(3));
+                }
+            }
+        } else if (translateMode.equals("ALL")) {
+            Matcher matcher = ALL_CHAT_PATTERN.matcher(rawText);
             if (matcher.matches()) {
-                String prefix = matcher.group(1);
-                String userPart = matcher.group(2);
-                String textToTranslate = matcher.group(3);
-
-                // Evitar traducir si el mensaje es del sistema "X se unió a la party" (No tiene ':')
-                // La regex ya exige ':', así que sabemos que es chat de usuario real.
-                
-                TranslatorHelper.translateAsync(textToTranslate, targetLanguage).thenAccept(translatedText -> {
-                    MinecraftClient client = MinecraftClient.getInstance();
-                    if (client.inGameHud != null) {
-                        client.execute(() -> {
-                            Text vanilatxt = Text.literal("§9\u200B" + prefix + "§f" + userPart + "§e" + translatedText);
-                            // Enviar a PartyChatHud exclusivo únicamente
-                            com.example.client.gui.PartyChatHud.addMessage(vanilatxt);
-                        });
-                    }
-                });
+                // Para ALL mode, la regex simplificada divide en (Prefijo+Usuario:) y (Mensaje)
+                executeTranslation("", matcher.group(1), matcher.group(2));
             }
         }
+    }
+
+    private static void executeTranslation(String prefix, String userPart, String textToTranslate) {
+        TranslatorHelper.translateAsync(textToTranslate, targetLanguage).thenAccept(translatedText -> {
+            MinecraftClient client = MinecraftClient.getInstance();
+            if (client.inGameHud != null) {
+                client.execute(() -> {
+                    Text vanilatxt = Text.literal("§9" + prefix + "§f" + userPart + "§e" + translatedText);
+                    com.example.client.gui.PartyChatHud.addMessage(vanilatxt);
+                });
+            }
+        });
     }
 }
