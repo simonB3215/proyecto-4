@@ -13,8 +13,8 @@ public class HudEditorScreen extends Screen {
     private int dragOffsetX = 0;
     private int dragOffsetY = 0;
     
-    private final int MOCK_WIDTH = 180;
-    private final int MOCK_HEIGHT = 38;
+    private final int MOCK_WIDTH = 320;
+    private final int MOCK_HEIGHT = 24;
 
     public HudEditorScreen(Screen parent) {
         super(Text.literal("Editor del Chat de Party"));

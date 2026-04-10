@@ -61,14 +61,17 @@ public class PartyChatHud {
         context.getMatrices().scale(ConfigManager.hudScale, ConfigManager.hudScale);
         
         int currentY = 0;
+        int maxWidth = 320;
+        
         for (PartyMessage msg : MESSAGES) {
-            // Un fondo semitransparente detrás de cada línea (x, y, ancho, alto, color)
-            int width = client.textRenderer.getWidth(msg.message) + 4;
-            context.fill(-2, currentY - 1, width, currentY + client.textRenderer.fontHeight + 1, 0x80000000);
-            
-            // Renderizar texto con sombra
-            context.drawTextWithShadow(client.textRenderer, msg.message, 0, currentY, -1);
-            currentY += client.textRenderer.fontHeight + 3;
+            List<net.minecraft.text.OrderedText> lines = client.textRenderer.wrapLines(msg.message, maxWidth);
+            for (net.minecraft.text.OrderedText line : lines) {
+                int width = client.textRenderer.getWidth(line) + 4;
+                context.fill(-2, currentY - 1, width, currentY + client.textRenderer.fontHeight + 1, 0x80000000);
+                
+                context.drawTextWithShadow(client.textRenderer, line, 0, currentY, -1);
+                currentY += client.textRenderer.fontHeight + 3;
+            }
         }
         
         context.getMatrices().popMatrix();
