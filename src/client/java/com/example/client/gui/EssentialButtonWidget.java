@@ -26,8 +26,12 @@ public class EssentialButtonWidget extends ClickableWidget {
         this.onPress = onPress;
     }
 
-    public void onClick(double mouseX, double mouseY) {
-        this.onPress.run();
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.active && this.visible && mouseX >= this.getX() && mouseY >= this.getY() && mouseX < this.getX() + this.width && mouseY < this.getY() + this.height) {
+            this.onPress.run();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -51,7 +55,7 @@ public class EssentialButtonWidget extends ClickableWidget {
         int textX = this.getX() + (this.width / 2) - (textWidth / 2);
         int textY = this.getY() + (this.height - textRenderer.fontHeight) / 2 + 1;
         
-        context.drawTextWithShadow(textRenderer, currentText, textX, textY, this.active ? 0xFFFFFF : 0x888888);
+        context.drawTextWithShadow(textRenderer, currentText, textX, textY, this.active ? 0xFFFFFFFF : 0xFFAAAAAA);
     }
     
     @Override

@@ -75,9 +75,9 @@ public class EssentialDropdownWidget extends ClickableWidget {
         String displayText = "Idioma: " + options.get(selectedIndex);
         int textX = this.getX() + 5;
         int textY = this.getY() + (this.height - MinecraftClient.getInstance().textRenderer.fontHeight) / 2 + 1;
-        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, displayText, textX, textY, 0xFFFFFF);
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, displayText, textX, textY, 0xFFFFFFFF);
         
-        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, expanded ? "▲" : "▼", this.getX() + this.width - 12, textY, 0xAAAAAA);
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, expanded ? "▲" : "▼", this.getX() + this.width - 12, textY, 0xFFAAAAAA);
         
         if (expanded) {
             int menuY = this.getY() + this.height;
@@ -101,7 +101,7 @@ public class EssentialDropdownWidget extends ClickableWidget {
                     context.fill(this.getX() + 1, optY, this.getX() + this.width - 1, optY + OPTION_HEIGHT, 0x884444FF);
                 }
                 
-                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, options.get(i), this.getX() + 5, optY + 6, optHovered ? 0xFFFFFF : 0xAAAAAA);
+                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, options.get(i), this.getX() + 5, optY + 6, optHovered ? 0xFFFFFFFF : 0xFFAAAAAA);
             }
         }
     }
