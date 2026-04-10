@@ -16,8 +16,7 @@ import java.util.regex.Pattern;
 
 public class ExampleModClient implements ClientModInitializer {
 
-    // Regex to match "Party > [MVP+] Name: Message" or "Party > Name: Message"
-    private static final Pattern PARTY_CHAT_PATTERN = Pattern.compile(".*?(Party > )(.*?: )(.*)$");
+    private static final Pattern PARTY_CHAT_PATTERN = Pattern.compile(".*?((?:Party|Grupo) > )(.*?: )(.*)", Pattern.DOTALL);
     
     // Variables de estado
     public static boolean isEnabled = true;
@@ -70,7 +69,7 @@ public class ExampleModClient implements ClientModInitializer {
                 .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("1.0.0");
             
             client.execute(() -> {
-                if (client.inGameHud != null && isEnabled) {
+                if (client.inGameHud != null && isEnabled && !client.isInSingleplayer()) {
                     client.inGameHud.getChatHud().addMessage(
                         Text.literal("§8[§bPartyTranslator§8] §7» §aFuncionando correctamente. §7Versión: §e" + version)
                     );
@@ -80,9 +79,10 @@ public class ExampleModClient implements ClientModInitializer {
     }
 
     private static void processMessage(String rawText) {
-        if (rawText.contains("Party >") && !rawText.contains("\u200B")) {
+        if ((rawText.contains("Party >") || rawText.contains("Grupo >")) && !rawText.contains("\u200B")) {
             Matcher matcher = PARTY_CHAT_PATTERN.matcher(rawText);
             if (matcher.matches()) {
+                String prefix = matcher.group(1);
                 String userPart = matcher.group(2);
                 String textToTranslate = matcher.group(3);
 
@@ -90,7 +90,7 @@ public class ExampleModClient implements ClientModInitializer {
                     MinecraftClient client = MinecraftClient.getInstance();
                     if (client.inGameHud != null) {
                         client.execute(() -> {
-                            Text vanilatxt = Text.literal("§9\u200BParty > §f" + userPart + "§e" + translatedText);
+                            Text vanilatxt = Text.literal("§9\u200B" + prefix + "§f" + userPart + "§e" + translatedText);
                             // Enviar a Vanilla Chat
                             client.inGameHud.getChatHud().addMessage(vanilatxt);
                             // Enviar a PartyChatHud exclusivo
@@ -98,6 +98,13 @@ public class ExampleModClient implements ClientModInitializer {
                         });
                     }
                 });
+            } else {
+                MinecraftClient client = MinecraftClient.getInstance();
+                if (client.inGameHud != null) {
+                    client.execute(() -> {
+                        client.inGameHud.getChatHud().addMessage(Text.literal("§c[DEBUG Traductor] Regex falló en el texto: §f" + rawText));
+                    });
+                }
             }
         }
     }
