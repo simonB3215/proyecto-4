@@ -16,18 +16,22 @@ public class TranslatorOptionsScreen extends Screen {
 
     private final Screen parent;
     private TextFieldWidget apiKeyField;
-    private TextFieldWidget xField;
-    private TextFieldWidget yField;
-    private TextFieldWidget scaleField;
     private ButtonWidget toggleButton;
     private ButtonWidget langButton;
     
-    // Lista de idiomas requeridos de ejemplo por el usuario
     private static final List<String> LANGUAGES = Arrays.asList("es", "en", "pl", "fr", "de", "ru", "pt", "it");
 
     public TranslatorOptionsScreen(Screen parent) {
         super(Text.literal("Configuración del Traductor"));
         this.parent = parent;
+    }
+
+    private void sendAestheticMessage(boolean state) {
+        if (this.client != null && this.client.player != null) {
+            String color = state ? "§a§lACTIVADO" : "§c§lDESACTIVADO";
+            String m = "§8[§bPartyTranslator§8] §7» §fEl Traductor Inteligente ha sido " + color + "§f.";
+            this.client.player.sendMessage(Text.literal(m), false);
+        }
     }
 
     @Override
@@ -39,6 +43,7 @@ public class TranslatorOptionsScreen extends Screen {
         this.toggleButton = ButtonWidget.builder(Text.literal("Traductor: " + (ExampleModClient.isEnabled ? "ON" : "OFF")), button -> {
             ExampleModClient.isEnabled = !ExampleModClient.isEnabled;
             button.setMessage(Text.literal("Traductor: " + (ExampleModClient.isEnabled ? "ON" : "OFF")));
+            sendAestheticMessage(ExampleModClient.isEnabled);
             saveSettings();
         }).dimensions(centerX - 100, startY, 200, 20).build();
         this.addDrawableChild(toggleButton);
@@ -59,13 +64,12 @@ public class TranslatorOptionsScreen extends Screen {
         // TextFieldWidget para API Key
         this.apiKeyField = new TextFieldWidget(this.textRenderer, centerX - 100, startY + 75, 200, 20, Text.literal("API Key"));
         this.apiKeyField.setMaxLength(100);
-        this.apiKeyField.setText(ConfigManager.apiKey); // In Yarn it's setText()
+        this.apiKeyField.setText(ConfigManager.apiKey);
         this.addDrawableChild(this.apiKeyField);
 
         // Botón Sincronizar Hypixel
         ButtonWidget syncButton = ButtonWidget.builder(Text.literal("Sincronizar desde Hypixel"), button -> {
             saveSettings();
-            
             button.setMessage(Text.literal("Sincronizando..."));
             HypixelApiHelper.syncLanguageFromHypixel(ConfigManager.apiKey).thenAccept(lang -> {
                 if (lang != null && this.client != null) {
@@ -84,18 +88,14 @@ public class TranslatorOptionsScreen extends Screen {
         }).dimensions(centerX - 100, startY + 100, 200, 20).build();
         this.addDrawableChild(syncButton);
 
-        // GUI Options
-        this.xField = new TextFieldWidget(this.textRenderer, centerX - 100, startY + 145, 60, 20, Text.literal("X"));
-        this.xField.setText(String.valueOf(ConfigManager.hudX));
-        this.addDrawableChild(this.xField);
-
-        this.yField = new TextFieldWidget(this.textRenderer, centerX - 30, startY + 145, 60, 20, Text.literal("Y"));
-        this.yField.setText(String.valueOf(ConfigManager.hudY));
-        this.addDrawableChild(this.yField);
-
-        this.scaleField = new TextFieldWidget(this.textRenderer, centerX + 40, startY + 145, 60, 20, Text.literal("Scale"));
-        this.scaleField.setText(String.valueOf(ConfigManager.hudScale));
-        this.addDrawableChild(this.scaleField);
+        // GUI Editor Button
+        ButtonWidget editHudButton = ButtonWidget.builder(Text.literal("Reposicionar Chat de Party"), button -> {
+            saveSettings();
+            if (this.client != null) {
+                this.client.setScreen(new HudEditorScreen(this));
+            }
+        }).dimensions(centerX - 100, startY + 130, 200, 20).build();
+        this.addDrawableChild(editHudButton);
 
         // Botón Guardar y Salir
         ButtonWidget closeButton = ButtonWidget.builder(Text.literal("Cerrar"), button -> {
@@ -107,15 +107,6 @@ public class TranslatorOptionsScreen extends Screen {
 
     private void saveSettings() {
         if (this.apiKeyField != null) ConfigManager.apiKey = this.apiKeyField.getText();
-        if (this.xField != null) {
-            try { ConfigManager.hudX = Integer.parseInt(this.xField.getText()); } catch(Exception ignored) {}
-        }
-        if (this.yField != null) {
-            try { ConfigManager.hudY = Integer.parseInt(this.yField.getText()); } catch(Exception ignored) {}
-        }
-        if (this.scaleField != null) {
-            try { ConfigManager.hudScale = Float.parseFloat(this.scaleField.getText()); } catch(Exception ignored) {}
-        }
         ConfigManager.saveConfig();
     }
 
@@ -124,9 +115,6 @@ public class TranslatorOptionsScreen extends Screen {
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 10, 0xFFFFFF);
         context.drawTextWithShadow(this.textRenderer, "Hypixel API Key:", this.width / 2 - 100, 60, 0xA0A0A0);
-        context.drawTextWithShadow(this.textRenderer, "X:", this.width / 2 - 100, 133, 0xA0A0A0);
-        context.drawTextWithShadow(this.textRenderer, "Y:", this.width / 2 - 30, 133, 0xA0A0A0);
-        context.drawTextWithShadow(this.textRenderer, "Escala:", this.width / 2 + 40, 133, 0xA0A0A0);
     }
 
     @Override
