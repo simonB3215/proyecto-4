@@ -11,10 +11,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ChatHudMixin {
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"), cancellable = true)
     private void onAddMessage(Text message, CallbackInfo ci) {
-        if (com.example.client.ExampleModClient.isTranslatingOutput) return;
+        if (com.example.client.ExampleModClient.isTranslatingOutput || com.example.client.ExampleModClient.isRepopulating) return;
 
         // Enviar a nuestro analizador global en tiempo real y cancelar si corresponde
-        if (com.example.client.ExampleModClient.shouldCancelAndTranslate(message.getString())) {
+        if (com.example.client.ExampleModClient.shouldCancelAndTranslate(message, message.getString())) {
             ci.cancel();
         }
     }
